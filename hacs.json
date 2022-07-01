@@ -1,0 +1,6 @@
+{
+    "name": "Synology Virtual Machine",
+    "country": "FR",
+    "domains": ["binary_sensor"],
+    "homeassistant": "2022.6.7"
+  }

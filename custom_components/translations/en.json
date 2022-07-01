@@ -1,0 +1,22 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Register your synology",
+                "data": {
+                    "username": "Username",
+                    "password": "Password",
+                    "ip_address": "IP/Hostname",
+                    "port": "Verify ssl"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Can not connect",
+            "unknown": "Unexpected error"
+        },
+        "abort": {
+            "already_configured": "already_configured_service"
+        }
+    }
+}

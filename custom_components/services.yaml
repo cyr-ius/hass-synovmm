@@ -1,0 +1,133 @@
+# Service entries description.
+
+set_vm:
+  description: set virtual machine
+  fields:
+    entity_id:
+      name: Virtual machine
+      required: true
+      selector:
+        entity:
+          integration: synology_vmm
+          domain: binary_sensor
+    name:
+      name: Name
+      required: true
+      selector:
+        text:
+    desc:
+      name: Description
+      selector:
+        text:
+    iso_images:
+      name: ISO Images
+      selector:
+        text:
+    guest_privilege:
+      name: Guest privilege
+      selector:
+        text:
+    autorun:
+      name: Autorun
+      required: true
+      default: 2
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Non
+              value: 0
+            - label: Dernier état
+              value: 1
+            - label: Oui
+              value: 2
+    boot_from:
+      name: Boot from
+      required: true
+      default: disk
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - label: Disque
+              value: disk
+            - label: CDROM
+              value: iso
+    usbs:
+      name: USB Device mounted
+      selector:
+        text:
+    use_ovmf:
+      name: Use ovmf
+      required: true
+      default: True
+      selector:
+        boolean:
+    usb_version:
+      name: USB version
+      selector:
+        select:
+          options:
+            - 2
+            - 3
+    old_use_ovmf:
+      name: Old user ovmf
+      required: true
+      default: "true"
+      selector:
+        boolean:
+    vnics_add:
+      name: Add vnics
+      selector:
+        text:
+    vnics_del:
+      name: Remove vnics
+      selector:
+        text:
+    vnics_edit:
+      name: Edit vnics
+      selector:
+        text:
+    increaseAllocatedSize:
+      name: Increase Allocated size
+      selector:
+        number:
+          min: 0
+          max: 16096
+    order_changed:
+      name: Order changed
+      default: "false"
+      selector:
+        boolean:
+    vdisks_add:
+      name: Add vdisks
+      selector:
+        text:
+    vdisks_del:
+      name: Remove vdisks
+      selector:
+        text:
+    vdisks_edit:
+      name: Edit vdisks
+      selector:
+        text:
+    cpu_weight:
+      name: CPU weight
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 256
+    cpu_pin_num:
+      name: CPU number
+      selector:
+        number:
+          min: 0
+          max: 256
+    vdisk_num:
+      name: VDisk number
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100

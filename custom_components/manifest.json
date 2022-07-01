@@ -1,0 +1,11 @@
+{
+    "domain": "synology_vmm",
+    "name": "Synology VMM",
+    "documentation": "",
+    "requirements": ["py-synologydsm-api==1.0.8"],
+    "codeowners": ["@cyr-ius"],
+    "config_flow": true,
+    "iot_class": "local_polling",
+    "loggers": ["synology_vmm"],
+    "version": "1.0.0"
+}

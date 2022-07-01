@@ -1,6 +1,6 @@
 {
     "domain": "synology_vmm",
-    "name": "Synology VMM",
+    "name": "Synology Virtual machine",
     "documentation": "",
     "requirements": ["py-synologydsm-api==1.0.8"],
     "codeowners": ["@cyr-ius"],

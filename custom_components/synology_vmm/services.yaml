@@ -5,6 +5,7 @@ set_vm:
   fields:
     entity_id:
       name: Virtual machine
+      description: virtual machine entity
       required: true
       selector:
         entity:
@@ -12,15 +13,19 @@ set_vm:
           domain: switch
     name:
       name: Name
+      description: name of virtual machine
+      example: my vm
       required: true
       selector:
         text:
     desc:
       name: Description
+      description: Description
       selector:
         text:
     iso_images:
       name: ISO Images
+      description: Type 'unmounted' to unmount all devices
       selector:
         text:
     guest_privilege:
@@ -53,6 +58,7 @@ set_vm:
               value: iso
     usbs:
       name: USB Device mounted
+      description: Type 'unmounted' to unmount all devices
       selector:
         text:
     use_ovmf:

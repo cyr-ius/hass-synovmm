@@ -51,10 +51,11 @@ class SynoVMMFlowHandler(ConfigFlow, domain=DOMAIN):
                     debugmode=False,
                 )
                 await self.hass.async_add_executor_job(api.information.update)
-            except Exception as er:
+            except Exception as er: # pylint: disable=broad-except
                 _LOGGER.error(er)
                 errors["base"] = "cannot_connect"
-            return self.async_create_entry(title=DOMAIN, data=user_input)
+            else:
+                return self.async_create_entry(title=DOMAIN, data=user_input)
 
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors

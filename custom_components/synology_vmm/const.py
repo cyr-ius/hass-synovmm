@@ -29,3 +29,13 @@ REPOS = {
     "method": "list",
     "version": 2,
 }
+SETTINGS = {
+    "api": "SYNO.Virtualization.API.Guest",
+    "method": "get",
+    "version": 1,
+}
+ADV_SETTINGS = {
+    "api": "SYNO.Virtualization.Guest",
+    "method": "get_setting",
+    "version": 1,
+}

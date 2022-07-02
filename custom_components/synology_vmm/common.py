@@ -2,7 +2,7 @@
 import json
 import logging
 
-from .const import USBS
+from .const import USBS, SETTINGS, ADV_SETTINGS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -10,21 +10,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_get_setting_vm(hass, api, guest_id):
     """Return list vm."""
     infos = {}
-    settings = {
-        "api": "SYNO.Virtualization.API.Guest",
-        "method": "get",
-        "version": 1,
-        "guest_id": guest_id,
-    }
-    adv_settings = {
-        "api": "SYNO.Virtualization.Guest",
-        "method": "get_setting",
-        "version": 1,
-        "guest_id": guest_id,
-    }
-
-    compound = json.dumps([settings, USBS, adv_settings])
-    params = {"version": 2, "compound": compound}
+    SETTINGS.update({"guest_id": guest_id})
+    ADV_SETTINGS.update({"guest_id": guest_id})
+    params = {"version": 2, "compound": json.dumps([SETTINGS, USBS, ADV_SETTINGS])}
     try:
         rslt = await hass.async_add_executor_job(
             api.post, "SYNO.Entry.Request", "request", params

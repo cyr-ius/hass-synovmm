@@ -39,3 +39,8 @@ ADV_SETTINGS = {
     "method": "get_setting",
     "version": 1,
 }
+SET = {
+    "api": "SYNO.Virtualization.Guest",
+    "method": "set",
+    "version": 1,
+}

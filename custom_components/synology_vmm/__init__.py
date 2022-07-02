@@ -13,7 +13,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from synology_dsm import SynologyDSM
 
-from .const import DOMAIN, PLATFORMS
+from .const import DOMAIN, PLATFORMS, SET
 from .common import async_get_setting_vm, async_get_stats
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,22 +68,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             json_params["usbs"] = json_params["usbs"].split(",")
         if json_params.get("iso_images"):
             json_params["iso_images"] = json_params["iso_images"].split(",")
-        compound = {
-            "api": "SYNO.Virtualization.Guest",
-            "method": "set",
-            "version": 1,
-            "guest_id": entity.unique_id,
-        }
-        compound.update(json_params)
-        params = {"version": 2, "compound": json.dumps([compound])}
+        SET.update({"guest_id": entity.unique_id})
+        SET.update(json_params)
+        params = {"version": 2, "compound": json.dumps([SET])}
         try:
+            _LOGGER.debug(f"Service Request: {params}")
             response = await hass.async_add_executor_job(
                 coordinator.api.post, "SYNO.Entry.Request", "request", params
             )
+            _LOGGER.debug(f"Service Response: {response}")
             if response.get("data", {}).get("has_fail", True):
                 raise Exception(response["data"].get("result"))
         except Exception as error:
-            _LOGGER.debug(params)
             raise Exception(error)
         else:
             await coordinator.async_request_refresh()

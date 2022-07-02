@@ -14,23 +14,23 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from synology_dsm import SynologyDSM
 
 from .consts import DOMAIN, PLATFORMS
-from .common import async_get_setting, list_vm
+from .common import async_get_setting_vm
 
 _LOGGER = logging.getLogger(__name__)
 
 VMCONFIG_SCHEMA = vol.Schema(
     {
         vol.Required("entity_id"): str,
-        vol.Required("name"): str,
+        vol.Optional("name"): str,
         vol.Optional("desc", ""): str,
         vol.Optional("iso_images"): str,
         vol.Optional("guest_privilege"): str,
-        vol.Required("autorun"): int,
-        vol.Required("boot_from", "disk"): str,
+        vol.Optional("autorun"): int,
+        vol.Optional("boot_from", "disk"): str,
         vol.Optional("usbs"): str,
-        vol.Required("use_ovmf", True): bool,
+        vol.Optional("use_ovmf", True): bool,
         vol.Optional("usb_version", []): int,
-        vol.Required("old_use_ovmf", True): bool,
+        vol.Optional("old_use_ovmf", True): bool,
         vol.Optional("vnics_add", []): str,
         vol.Optional("vnics_del", []): str,
         vol.Optional("vnics_edit", []): str,
@@ -41,7 +41,7 @@ VMCONFIG_SCHEMA = vol.Schema(
         vol.Optional("vdisks_edit", []): str,
         vol.Optional("cpu_weight"): int,
         vol.Optional("cpu_pin_num"): int,
-        vol.Required("vdisk_num"): int,
+        vol.Optional("vdisk_num"): int,
     }
 )
 
@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         entity_registry = await er.async_get_registry(hass)
         entity = entity_registry.async_get(call.data["entity_id"])
-        params = [
+        json_params = [
             {
                 "api": "SYNO.Virtualization.Guest",
                 "method": "set",
@@ -98,15 +98,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "vdisk_num": call.data.get("vdisk_num"),
             }
         ]
-
-        def set_entry(api, params):
-            params = {"version": 2, "compound": json.dumps(params)}
-            _LOGGER.debug(params)
-            rslt = api.post("SYNO.Entry.Request", "request", params=params)
-            _LOGGER.debug(rslt)
-            return rslt
-
-        await hass.async_add_executor_job(set_entry, coordinator.api, params)
+        params = {"version": 2, "compound": json.dumps(json_params)}
+        await hass.async_add_executor_job(
+            coordinator.api.post, "SYNO.Entry.Request", "request", params
+        )
+        await coordinator.async_request_refresh()
 
     hass.services.async_register(DOMAIN, "set_vm", async_set_vm, schema=VMCONFIG_SCHEMA)
 
@@ -154,13 +150,18 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_fetch_data(self) -> dict:
         """Fetch configuration for all vms."""
-        vms = await self.hass.async_add_executor_job(list_vm, self.api)
+        vms = await self.hass.async_add_executor_job(
+            self.api.post, "SYNO.Virtualization.API.Guest", "list"
+        )
+
         configurations = {}
         for vm in vms.get("data", {}).get("guests", []):
-            settings = await async_get_setting(self.hass, self.api, vm["guest_id"])
-            configuration = {}
-            for setting in settings:
-                category = f"{setting.get('api')}.{setting.get('method')}"
-                configuration.update({category: setting.get("data", {})})
-            configurations.update({vm["guest_id"]: configuration})
+            try:
+                settings = await async_get_setting_vm(
+                    self.hass, self.api, vm["guest_id"]
+                )
+                configurations.update({vm["guest_id"]: settings})
+            except Exception as er:
+                _LOGGER.error(er)
+
         return configurations

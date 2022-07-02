@@ -9,7 +9,7 @@ set_vm:
       selector:
         entity:
           integration: synology_vmm
-          domain: binary_sensor
+          domain: switch
     name:
       name: Name
       required: true
@@ -29,7 +29,6 @@ set_vm:
         text:
     autorun:
       name: Autorun
-      required: true
       default: 2
       selector:
         select:
@@ -43,7 +42,6 @@ set_vm:
               value: 2
     boot_from:
       name: Boot from
-      required: true
       default: disk
       selector:
         select:
@@ -59,7 +57,6 @@ set_vm:
         text:
     use_ovmf:
       name: Use ovmf
-      required: true
       default: True
       selector:
         boolean:
@@ -72,8 +69,7 @@ set_vm:
             - 3
     old_use_ovmf:
       name: Old user ovmf
-      required: true
-      default: "true"
+      default: True
       selector:
         boolean:
     vnics_add:
@@ -96,7 +92,7 @@ set_vm:
           max: 16096
     order_changed:
       name: Order changed
-      default: "false"
+      default: False
       selector:
         boolean:
     vdisks_add:
@@ -113,7 +109,6 @@ set_vm:
         text:
     cpu_weight:
       name: CPU weight
-      required: true
       selector:
         number:
           min: 0
@@ -123,10 +118,9 @@ set_vm:
       selector:
         number:
           min: 0
-          max: 256
+          max: 100
     vdisk_num:
       name: VDisk number
-      required: true
       selector:
         number:
           min: 0

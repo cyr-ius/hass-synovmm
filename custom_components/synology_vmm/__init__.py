@@ -46,14 +46,10 @@ VMCONFIG_SCHEMA = vol.Schema(
 )
 
 
-async def async_setup(hass, config):
-    """Load configuration for component."""
-    hass.data.setdefault(DOMAIN, {})
-    return True
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the Syno component."""
+    hass.data.setdefault(DOMAIN, {})
+
     coordinator = SynologyVMMDataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     if coordinator.data is None:
@@ -64,7 +60,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     async def async_set_vm(call) -> None:
-        _LOGGER.debug("Call service")
         entity_registry = await er.async_get_registry(hass)
         entity = entity_registry.async_get(call.data["entity_id"])
         json_params = call.data.copy()
@@ -130,30 +125,20 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
         )
 
     async def _async_update_data(self) -> dict:
+        configurations = {}
         try:
             await self.hass.async_add_executor_job(self.api.information.update)
-            configurations = await self.async_fetch_data()
-            return configurations
+            vms = await self.hass.async_add_executor_job(
+                self.api.post, "SYNO.Virtualization.API.Guest", "list"
+            )
+            for vm in vms.get("data", {}).get("guests", []):
+                gid = vm["guest_id"]
+                settings = await async_get_setting_vm(self.hass, self.api, gid)
+                stats = await async_get_stats(self.hass, self.api, gid)
+                settings["stats"] = stats
+                configurations.update({gid: settings})
+
         except Exception as error:
             raise UpdateFailed(error) from error
-
-    async def async_fetch_data(self) -> dict:
-        """Fetch configuration for all vms."""
-        vms = await self.hass.async_add_executor_job(
-            self.api.post, "SYNO.Virtualization.API.Guest", "list"
-        )
-
-        configurations = {}
-        for vm in vms.get("data", {}).get("guests", []):
-            try:
-                settings = await async_get_setting_vm(
-                    self.hass, self.api, vm["guest_id"]
-                )
-                stats = await async_get_stats(self.hass, self.api, vm["guest_id"])
-                settings["stats"] = stats
-                configurations.update({vm["guest_id"]: settings})
-
-            except Exception as er:
-                _LOGGER.error(er)
 
         return configurations

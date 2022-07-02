@@ -7,7 +7,7 @@
                     "username": "Username",
                     "password": "Password",
                     "ip_address": "IP/Hostname",
-                    "port": "Verify ssl"
+                    "port": "Port"
                 }
             }
         },

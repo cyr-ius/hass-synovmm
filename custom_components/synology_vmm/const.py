@@ -2,7 +2,7 @@
 DOMAIN = "synology_vmm"
 USB_DEVICE = "usb_device"
 GUEST_ID = "guest_id"
-PLATFORMS = ["switch"]
+PLATFORMS = ["switch", "sensor"]
 IMAGES = {
     "api": "SYNO.Virtualization.Guest.Image",
     "method": "list",

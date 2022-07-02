@@ -13,32 +13,32 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from synology_dsm import SynologyDSM
 
-from .consts import DOMAIN, PLATFORMS
-from .common import async_get_setting_vm
+from .const import DOMAIN, PLATFORMS
+from .common import async_get_setting_vm, async_get_stats
 
 _LOGGER = logging.getLogger(__name__)
 
 VMCONFIG_SCHEMA = vol.Schema(
     {
         vol.Required("entity_id"): str,
-        vol.Optional("name"): str,
-        vol.Optional("desc", ""): str,
+        vol.Required("name"): str,
+        vol.Optional("desc"): str,
         vol.Optional("iso_images"): str,
         vol.Optional("guest_privilege"): str,
         vol.Optional("autorun"): int,
-        vol.Optional("boot_from", "disk"): str,
+        vol.Optional("boot_from"): str,
         vol.Optional("usbs"): str,
-        vol.Optional("use_ovmf", True): bool,
-        vol.Optional("usb_version", []): int,
-        vol.Optional("old_use_ovmf", True): bool,
-        vol.Optional("vnics_add", []): str,
-        vol.Optional("vnics_del", []): str,
-        vol.Optional("vnics_edit", []): str,
-        vol.Optional("increaseAllocatedSize", 0): int,
-        vol.Optional("order_changed", False): bool,
-        vol.Optional("vdisks_add", []): str,
-        vol.Optional("vdisks_del", []): str,
-        vol.Optional("vdisks_edit", []): str,
+        vol.Optional("use_ovmf"): bool,
+        vol.Optional("usb_version"): int,
+        vol.Optional("old_use_ovmf"): bool,
+        vol.Optional("vnics_add"): str,
+        vol.Optional("vnics_del"): str,
+        vol.Optional("vnics_edit"): str,
+        vol.Optional("increaseAllocatedSize"): int,
+        vol.Optional("order_changed"): bool,
+        vol.Optional("vdisks_add"): str,
+        vol.Optional("vdisks_del"): str,
+        vol.Optional("vdisks_edit"): str,
         vol.Optional("cpu_weight"): int,
         vol.Optional("cpu_pin_num"): int,
         vol.Optional("vdisk_num"): int,
@@ -67,42 +67,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         entity_registry = await er.async_get_registry(hass)
         entity = entity_registry.async_get(call.data["entity_id"])
-        json_params = [
-            {
-                "api": "SYNO.Virtualization.Guest",
-                "method": "set",
-                "version": 1,
-                "guest_privilege": call.data.get("guest_privilege", []),
-                "iso_images": call.data.get("iso_images", ["unmounted", "unmounted"]),
-                "autorun": call.data.get("autorun", 2),
-                "boot_from": call.data.get("boot_from", "disk"),
-                "usbs": call.data.get(
-                    "usbs", "unmounted,unmounted,unmounted,unmounted"
-                ).split(","),
-                "use_ovmf": call.data.get("use_ovmf", True),
-                "usb_version": call.data.get("usb_version", 2),
-                "old_use_ovmf": call.data.get("old_use_ovmf", True),
-                "guest_id": entity.unique_id,
-                "vnics_add": call.data.get("vnics_add", []),
-                "vnics_del": call.data.get("vnics_del", []),
-                "vnics_edit": call.data.get("vnics_edit", []),
-                "increaseAllocatedSize": call.data.get("increaseAllocatedSize", 0),
-                "order_changed": call.data.get("order_changed", False),
-                "vdisks_add": call.data.get("vdisks_add", []),
-                "vdisks_del": call.data.get("vdisks_del", []),
-                "vdisks_edit": call.data.get("vdisks_edit", []),
-                "name": call.data.get("name"),
-                "cpu_weight": call.data.get("cpu_weight", 256),
-                "desc": call.data.get("desc", ""),
-                "cpu_pin_num": call.data.get("cpu_pin_num", 0),
-                "vdisk_num": call.data.get("vdisk_num"),
-            }
-        ]
-        params = {"version": 2, "compound": json.dumps(json_params)}
-        await hass.async_add_executor_job(
-            coordinator.api.post, "SYNO.Entry.Request", "request", params
-        )
-        await coordinator.async_request_refresh()
+        json_params = call.data.copy()
+        json_params.pop("entity_id")
+        if json_params.get("usbs"):
+            json_params["usbs"] = json_params["usbs"].split(",")
+        if json_params.get("iso_images"):
+            json_params["iso_images"] = json_params["iso_images"].split(",")
+        compound = {
+            "api": "SYNO.Virtualization.Guest",
+            "method": "set",
+            "version": 1,
+            "guest_id": entity.unique_id,
+        }
+        compound.update(json_params)
+        params = {"version": 2, "compound": json.dumps([compound])}
+        try:
+            response = await hass.async_add_executor_job(
+                coordinator.api.post, "SYNO.Entry.Request", "request", params
+            )
+            if response.get("data", {}).get("has_fail", True):
+                raise Exception(response["data"].get("result"))
+        except Exception as error:
+            _LOGGER.debug(params)
+            _LOGGER.error(error)
+            return False
+        else:
+            await coordinator.async_request_refresh()
 
     hass.services.async_register(DOMAIN, "set_vm", async_set_vm, schema=VMCONFIG_SCHEMA)
 
@@ -160,7 +150,10 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
                 settings = await async_get_setting_vm(
                     self.hass, self.api, vm["guest_id"]
                 )
+                stats = await async_get_stats(self.hass, self.api, vm["guest_id"])
+                settings["stats"] = stats
                 configurations.update({vm["guest_id"]: settings})
+
             except Exception as er:
                 _LOGGER.error(er)
 

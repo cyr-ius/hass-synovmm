@@ -7,7 +7,7 @@ from homeassistant.const import CONF_IP_ADDRESS, CONF_PASSWORD, CONF_PORT, CONF_
 from homeassistant.helpers import selector
 from synology_dsm import SynologyDSM
 
-from .consts import DOMAIN
+from .const import DOMAIN
 
 DATA_SCHEMA = vol.Schema(
     {

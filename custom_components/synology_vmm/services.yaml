@@ -57,7 +57,6 @@ set_vm:
         text:
     use_ovmf:
       name: Use ovmf
-      default: True
       selector:
         boolean:
     usb_version:
@@ -69,7 +68,6 @@ set_vm:
             - 3
     old_use_ovmf:
       name: Old user ovmf
-      default: True
       selector:
         boolean:
     vnics_add:

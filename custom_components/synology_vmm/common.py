@@ -1,6 +1,6 @@
 """Helpers functions synology api."""
 import json
-from .consts import USBS
+from .const import USBS
 
 
 async def async_get_setting_vm(hass, api, guest_id):
@@ -30,3 +30,15 @@ async def async_get_setting_vm(hass, api, guest_id):
                 infos["usb_list"] = usbs
             infos.update(data["data"])
     return infos
+
+
+async def async_get_stats(hass, api, guest_id=None):
+    """Get statistics virtual machine."""
+    stats = await hass.async_add_executor_job(
+        api.post, "SYNO.Virtualization.Cluster", "get_guest"
+    )
+    if guest_id:
+        for stat in stats["data"]["guests"]:
+            if stat["id"] == guest_id:
+                return stat
+    return stats

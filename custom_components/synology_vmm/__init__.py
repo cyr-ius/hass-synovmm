@@ -64,7 +64,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     async def async_set_vm(call) -> None:
-
+        _LOGGER.debug("Call service")
         entity_registry = await er.async_get_registry(hass)
         entity = entity_registry.async_get(call.data["entity_id"])
         json_params = call.data.copy()
@@ -89,8 +89,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 raise Exception(response["data"].get("result"))
         except Exception as error:
             _LOGGER.debug(params)
-            _LOGGER.error(error)
-            return False
+            raise Exception(error)
         else:
             await coordinator.async_request_refresh()
 

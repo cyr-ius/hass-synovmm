@@ -55,6 +55,6 @@ class VMSensor(CoordinatorEntity, SensorEntity):
         """Return the device info."""
         return DeviceInfo(
             identifiers={(DOMAIN, self.id)},
-            name=self.coordinator.data[self.id]["guest_name"],
+            name=self.coordinator.data[self.id].get("guest_name"),
             manufacturer=DOMAIN,
         )

@@ -1,9 +1,17 @@
-"""Config flow to configure VMM."""
+"""Config flow to configure Synology virtual machine."""
 import logging
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow
-from homeassistant.const import CONF_IP_ADDRESS, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_PASSWORD,
+    CONF_PORT,
+    CONF_SSL,
+    CONF_TIMEOUT,
+    CONF_USERNAME,
+    CONF_VERIFY_SSL,
+)
 from homeassistant.helpers import selector
 from synology_dsm import SynologyDSM
 
@@ -12,11 +20,22 @@ from .const import DOMAIN
 DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_IP_ADDRESS): selector.TextSelector(),
-        vol.Required(CONF_PORT): selector.TextSelector(),
+        vol.Required(CONF_PORT, default=5000): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=1, max=65035, step=1, mode=selector.NumberSelectorMode.BOX
+            )
+        ),
         vol.Required(CONF_USERNAME): selector.TextSelector(),
         vol.Required(CONF_PASSWORD): selector.TextSelector(
             selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
         ),
+        vol.Required(CONF_TIMEOUT, default=60): selector.NumberSelector(
+            selector.NumberSelectorConfig(
+                min=0, max=180, step=1, mode=selector.NumberSelectorMode.BOX
+            )
+        ),
+        vol.Required(CONF_SSL, default=False): selector.BooleanSelector(),
+        vol.Required(CONF_VERIFY_SSL, default=False): selector.BooleanSelector(),
     }
 )
 
@@ -39,14 +58,16 @@ class SynoVMMFlowHandler(ConfigFlow, domain=DOMAIN):
                 }
             )
             try:
+                user_input[CONF_PORT] = int(user_input[CONF_PORT])
+                user_input[CONF_TIMEOUT] = int(user_input[CONF_TIMEOUT])
                 api = SynologyDSM(
                     user_input[CONF_IP_ADDRESS],
                     user_input[CONF_PORT],
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
-                    use_https=False,
-                    verify_ssl=False,
-                    timeout=None,
+                    use_https=user_input[CONF_SSL],
+                    verify_ssl=user_input[CONF_VERIFY_SSL],
+                    timeout=user_input[CONF_TIMEOUT],
                     device_token=None,
                     debugmode=False,
                 )
@@ -55,7 +76,10 @@ class SynoVMMFlowHandler(ConfigFlow, domain=DOMAIN):
                 _LOGGER.error(er)
                 errors["base"] = "cannot_connect"
             else:
-                return self.async_create_entry(title=DOMAIN, data=user_input)
+                return self.async_create_entry(
+                    title=f"{user_input[CONF_IP_ADDRESS]} ({user_input[CONF_USERNAME]})",
+                    data=user_input,
+                )
 
         return self.async_show_form(
             step_id="user", data_schema=DATA_SCHEMA, errors=errors

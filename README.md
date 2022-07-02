@@ -4,9 +4,9 @@ This a *custom component* for [Home Assistant](https://www.home-assistant.io/).
 The `synology_vmm` integration allows you to observe and control [Synology DSM](http://www.synology.com/).
 
 There is currently support for the following device types within Home Assistant:
-*Switch Sensor with virtual machine status (stop/start)
-*Cpu and Memory sensors
-*Service to set machine (mount/unmount usb drive , resize , rename , add disk , add network , ...)
+* Switch Sensor with virtual machine status (stop/start)
+* Cpu and Memory sensors
+* Service to set machine (mount/unmount usb drive , resize , rename , add disk , add network , ...)
   
 ## Configuration
 

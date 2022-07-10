@@ -1,7 +1,6 @@
 {
     "name": "Synology Virtual Machine",
     "country": "FR",
-    "domains": ["sensor", "switch"],
     "homeassistant": "2022.6.7",
     "render_readme": true
 }

@@ -38,7 +38,6 @@ class VMSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, unique_id, name, value):
         """Initialize the sensor."""
         super().__init__(coordinator)
-        self.coordinator = coordinator
         self.id = unique_id
         self._attr_unique_id = f"{unique_id}_{value}"
         self._attr_name = name

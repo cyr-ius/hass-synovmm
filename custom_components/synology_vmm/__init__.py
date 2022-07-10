@@ -7,43 +7,80 @@ from datetime import timedelta
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_IP_ADDRESS, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_PASSWORD,
+    CONF_PORT,
+    CONF_USERNAME,
+    CONF_ENTITY_ID,
+    CONF_NAME,
+    CONF_SSL,
+    CONF_TIMEOUT,
+    CONF_VERIFY_SSL,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from synology_dsm import SynologyDSM
 
-from .const import DOMAIN, PLATFORMS, SET
+from .const import (
+    DOMAIN,
+    PLATFORMS,
+    SET,
+    CONF_AUTORUN,
+    CONF_BOOT,
+    CONF_CPU_PNUM,
+    CONF_CPU_WEIGHT,
+    CONF_DESC,
+    CONF_INC_SIZE,
+    CONF_ISO,
+    CONF_OLD_OVMF,
+    CONF_ORDER,
+    CONF_PRIVILEGES,
+    CONF_USB_VERSION,
+    CONF_USBS,
+    CONF_USE_OVMF,
+    CONF_VDISK_NUM,
+    CONF_VDISKS_ADD,
+    CONF_VDISKS_DEL,
+    CONF_VDISKS_EDIT,
+    CONF_VNICS_ADD,
+    CONF_VNICS_DEL,
+    CONF_VNICS_EDIT,
+    GUEST_ID,
+    SERVICE_SET_VM,
+)
 from .common import async_get_setting_vm, async_get_stats
-
-_LOGGER = logging.getLogger(__name__)
 
 VMCONFIG_SCHEMA = vol.Schema(
     {
-        vol.Required("entity_id"): str,
-        vol.Required("name"): str,
-        vol.Optional("desc"): str,
-        vol.Optional("iso_images"): str,
-        vol.Optional("guest_privilege"): str,
-        vol.Optional("autorun"): int,
-        vol.Optional("boot_from"): str,
-        vol.Optional("usbs"): str,
-        vol.Optional("use_ovmf"): bool,
-        vol.Optional("usb_version"): int,
-        vol.Optional("old_use_ovmf"): bool,
-        vol.Optional("vnics_add"): str,
-        vol.Optional("vnics_del"): str,
-        vol.Optional("vnics_edit"): str,
-        vol.Optional("increaseAllocatedSize"): int,
-        vol.Optional("order_changed"): bool,
-        vol.Optional("vdisks_add"): str,
-        vol.Optional("vdisks_del"): str,
-        vol.Optional("vdisks_edit"): str,
-        vol.Optional("cpu_weight"): int,
-        vol.Optional("cpu_pin_num"): int,
-        vol.Optional("vdisk_num"): int,
+        vol.Required(CONF_ENTITY_ID): str,
+        vol.Required(CONF_NAME): str,
+        vol.Optional(CONF_DESC): str,
+        vol.Optional(CONF_ISO): str,
+        vol.Optional(CONF_PRIVILEGES): str,
+        vol.Optional(CONF_AUTORUN): int,
+        vol.Optional(CONF_BOOT): str,
+        vol.Optional(CONF_USBS): str,
+        vol.Optional(CONF_USE_OVMF): bool,
+        vol.Optional(CONF_USB_VERSION): int,
+        vol.Optional(CONF_OLD_OVMF): bool,
+        vol.Optional(CONF_VNICS_ADD): str,
+        vol.Optional(CONF_VNICS_DEL): str,
+        vol.Optional(CONF_VNICS_EDIT): str,
+        vol.Optional(CONF_INC_SIZE): int,
+        vol.Optional(CONF_ORDER): bool,
+        vol.Optional(CONF_VDISKS_ADD): str,
+        vol.Optional(CONF_VDISKS_DEL): str,
+        vol.Optional(CONF_VDISKS_EDIT): str,
+        vol.Optional(CONF_CPU_WEIGHT): int,
+        vol.Optional(CONF_CPU_PNUM): int,
+        vol.Optional(CONF_VDISK_NUM): int,
     }
 )
+
+SCAN_INTERVAL = 60
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -61,14 +98,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def async_set_vm(call) -> None:
         entity_registry = await er.async_get_registry(hass)
-        entity = entity_registry.async_get(call.data["entity_id"])
+        entity = entity_registry.async_get(call.data[CONF_ENTITY_ID])
         json_params = call.data.copy()
-        json_params.pop("entity_id")
-        if json_params.get("usbs"):
-            json_params["usbs"] = json_params["usbs"].split(",")
-        if json_params.get("iso_images"):
-            json_params["iso_images"] = json_params["iso_images"].split(",")
-        SET.update({"guest_id": entity.unique_id})
+        json_params.pop(CONF_ENTITY_ID)
+        if json_params.get(CONF_USBS):
+            json_params[CONF_USBS] = json_params[CONF_USBS].split(",")
+        if json_params.get(CONF_ISO):
+            json_params[CONF_ISO] = json_params[CONF_ISO].split(",")
+        SET.update({GUEST_ID: entity.unique_id})
         SET.update(json_params)
         params = {"version": 2, "compound": json.dumps([SET])}
         try:
@@ -84,7 +121,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         else:
             await coordinator.async_request_refresh()
 
-    hass.services.async_register(DOMAIN, "set_vm", async_set_vm, schema=VMCONFIG_SCHEMA)
+    hass.services.async_register(
+        DOMAIN, SERVICE_SET_VM, async_set_vm, schema=VMCONFIG_SCHEMA
+    )
 
     return True
 
@@ -104,23 +143,24 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         config_entry,
     ) -> None:
-        """Class to manage fetching Heatzy data API."""
+        """Class to manage fetching data API."""
+        super().__init__(
+            hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=SCAN_INTERVAL)
+        )
         self.api = SynologyDSM(
             config_entry.data[CONF_IP_ADDRESS],
             config_entry.data[CONF_PORT],
             config_entry.data[CONF_USERNAME],
             config_entry.data[CONF_PASSWORD],
-            use_https=False,
-            verify_ssl=False,
-            timeout=None,
+            use_https=config_entry.data[CONF_SSL],
+            verify_ssl=config_entry.data[CONF_VERIFY_SSL],
+            timeout=config_entry.data[CONF_TIMEOUT],
             device_token=None,
             debugmode=False,
         )
-        super().__init__(
-            hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=60)
-        )
 
     async def _async_update_data(self) -> dict:
+        """Update data."""
         configurations = {}
         try:
             await self.hass.async_add_executor_job(self.api.information.update)
@@ -128,7 +168,7 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
                 self.api.post, "SYNO.Virtualization.API.Guest", "list"
             )
             for vm in vms.get("data", {}).get("guests", []):
-                gid = vm["guest_id"]
+                gid = vm[GUEST_ID]
                 settings = await async_get_setting_vm(self.hass, self.api, gid)
                 stats = await async_get_stats(self.hass, self.api, gid)
                 settings["stats"] = stats

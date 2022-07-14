@@ -1,7 +1,6 @@
 {
     "name": "Synology Virtual Machine",
     "country": "FR",
-    "homeassistant": "2022.6.7",
-    "documentation": "https://github.com/Cyr-ius/hass-synovmm",    
+    "homeassistant": "2022.6.7", 
     "render_readme": true
 }

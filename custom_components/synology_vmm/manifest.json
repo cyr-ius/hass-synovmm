@@ -1,7 +1,7 @@
 {
     "domain": "synology_vmm",
     "name": "Synology Virtual machine",
-    "documentation": "",
+    "documentation": "https://github.com/cyr-ius/hass-synovmm",
     "requirements": ["py-synologydsm-api==1.0.8"],
     "codeowners": ["@cyr-ius"],
     "config_flow": true,

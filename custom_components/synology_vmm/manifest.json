@@ -7,6 +7,6 @@
     "codeowners": ["@cyr-ius"],
     "config_flow": true,
     "iot_class": "local_polling",
-    "loggers": ["synology_vmm"],
-    "version": "1.4"
+    "loggers": ["py-synologydsm-api"],
+    "version": "1.5"
 }

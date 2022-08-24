@@ -89,8 +89,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = SynologyVMMDataUpdateCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
-    if coordinator.data is None:
-        return False
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 

@@ -53,7 +53,7 @@ class VMSensor(CoordinatorEntity, SwitchEntity):
         usb_list = []
         for usb in infos.get("usb_list", []):
             if usb["disabled"] is False:
-                usb_list.append({"id":usb["usb_id"], "name": usb["product_name"]})
+                usb_list.append({"id": usb["usb_id"], "name": usb["product_name"]})
 
         attributes = {"usb_list": usb_list, "usb_mounted": infos.get("usbs", [])}
         return attributes

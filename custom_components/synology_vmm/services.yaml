@@ -57,7 +57,7 @@ set_vm:
             - label: CDROM
               value: iso
     usbs:
-      name: USB Device mounted
+      name: USB Device id
       description: Type 'unmounted' to unmount all devices
       selector:
         text:

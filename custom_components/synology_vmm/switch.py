@@ -69,8 +69,7 @@ class VMSensor(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        await self.hass.async_add_executor_job(
-            self.coordinator.api.post,
+        await self.coordinator.api.post(
             "SYNO.Virtualization.API.Guest.Action",
             "poweron",
             {"guest_id": self.unique_id},
@@ -79,8 +78,7 @@ class VMSensor(CoordinatorEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await self.hass.async_add_executor_job(
-            self.coordinator.api.post,
+        await self.coordinator.api.post(
             "SYNO.Virtualization.API.Guest.Action",
             "poweroff",
             {"guest_id": self.unique_id},

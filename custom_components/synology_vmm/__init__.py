@@ -1,32 +1,31 @@
 """The Syno component."""
 from __future__ import annotations
 
+from datetime import timedelta
 import json
 import logging
-from datetime import timedelta
 
+from synology_dsm import SynologyDSM, SynologyDSMException
 import voluptuous as vol
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    CONF_ENTITY_ID,
     CONF_IP_ADDRESS,
+    CONF_NAME,
     CONF_PASSWORD,
     CONF_PORT,
-    CONF_USERNAME,
-    CONF_ENTITY_ID,
-    CONF_NAME,
     CONF_SSL,
     CONF_TIMEOUT,
-    CONF_VERIFY_SSL,
+    CONF_USERNAME,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from synology_dsm import SynologyDSM
 
+from .common import async_get_setting_vm, async_get_stats
 from .const import (
-    DOMAIN,
-    PLATFORMS,
-    SET,
     CONF_AUTORUN,
     CONF_BOOT,
     CONF_CPU_PNUM,
@@ -47,10 +46,12 @@ from .const import (
     CONF_VNICS_ADD,
     CONF_VNICS_DEL,
     CONF_VNICS_EDIT,
+    DOMAIN,
     GUEST_ID,
+    PLATFORMS,
     SERVICE_SET_VM,
+    SET,
 )
-from .common import async_get_setting_vm, async_get_stats
 
 VMCONFIG_SCHEMA = vol.Schema(
     {
@@ -108,13 +109,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         params = {"version": 2, "compound": json.dumps([SET])}
         try:
             _LOGGER.debug(f"Service Request: {params}")
-            response = await hass.async_add_executor_job(
-                coordinator.api.post, "SYNO.Entry.Request", "request", params
+            response = await coordinator.api.post(
+                "SYNO.Entry.Request", "request", params
             )
             _LOGGER.debug(f"Service Response: {response}")
             if response.get("data", {}).get("has_fail", True):
                 raise Exception(response["data"].get("result"))
-        except Exception as error:
+        except SynologyDSMException as error:
             raise Exception(error)
         else:
             await coordinator.async_request_refresh()
@@ -146,12 +147,12 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
             hass, _LOGGER, name=DOMAIN, update_interval=timedelta(seconds=SCAN_INTERVAL)
         )
         self.api = SynologyDSM(
+            async_create_clientsession(hass),
             config_entry.data[CONF_IP_ADDRESS],
             config_entry.data[CONF_PORT],
             config_entry.data[CONF_USERNAME],
             config_entry.data[CONF_PASSWORD],
             use_https=config_entry.data[CONF_SSL],
-            verify_ssl=config_entry.data[CONF_VERIFY_SSL],
             timeout=config_entry.data[CONF_TIMEOUT],
             device_token=None,
             debugmode=False,
@@ -161,10 +162,8 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
         """Update data."""
         configurations = {}
         try:
-            await self.hass.async_add_executor_job(self.api.information.update)
-            vms = await self.hass.async_add_executor_job(
-                self.api.post, "SYNO.Virtualization.API.Guest", "list"
-            )
+            await self.api.information.update()
+            vms = await self.api.post("SYNO.Virtualization.API.Guest", "list")
             for vm in vms.get("data", {}).get("guests", []):
                 gid = vm[GUEST_ID]
                 settings = await async_get_setting_vm(self.hass, self.api, gid)
@@ -172,7 +171,7 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
                 settings["stats"] = stats
                 configurations.update({gid: settings})
 
-        except Exception as error:
+        except SynologyDSMException as error:
             raise UpdateFailed(error) from error
 
         return configurations

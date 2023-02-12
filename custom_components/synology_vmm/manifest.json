@@ -3,10 +3,10 @@
     "name": "Synology Virtual machine",
     "documentation": "https://github.com/cyr-ius/hass-synovmm",
     "issue_tracker": "https://github.com/Cyr-ius/hass-synovmm/issues",
-    "requirements": ["py-synologydsm-api==1.0.8"],
+    "requirements": ["py-synologydsm-api==2.1.4"],
     "codeowners": ["@cyr-ius"],
     "config_flow": true,
     "iot_class": "local_polling",
     "loggers": ["py-synologydsm-api"],
-    "version": "1.6"
+    "version": "1.7"
 }

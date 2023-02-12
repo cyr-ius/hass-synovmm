@@ -1,7 +1,9 @@
 """Config flow to configure Synology virtual machine."""
 import logging
 
+from synology_dsm import SynologyDSM, SynologyDSMException
 import voluptuous as vol
+
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import (
     CONF_IP_ADDRESS,
@@ -9,11 +11,10 @@ from homeassistant.const import (
     CONF_PORT,
     CONF_SSL,
     CONF_TIMEOUT,
-    CONF_USERNAME,
-    CONF_VERIFY_SSL,
+    CONF_USERNAME
 )
 from homeassistant.helpers import selector
-from synology_dsm import SynologyDSM
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .const import DOMAIN
 
@@ -35,7 +36,6 @@ DATA_SCHEMA = vol.Schema(
             )
         ),
         vol.Required(CONF_SSL, default=False): selector.BooleanSelector(),
-        vol.Required(CONF_VERIFY_SSL, default=False): selector.BooleanSelector(),
     }
 )
 
@@ -61,19 +61,19 @@ class SynoVMMFlowHandler(ConfigFlow, domain=DOMAIN):
                 user_input[CONF_PORT] = int(user_input[CONF_PORT])
                 user_input[CONF_TIMEOUT] = int(user_input[CONF_TIMEOUT])
                 api = SynologyDSM(
+                    async_create_clientsession(self.hass),
                     user_input[CONF_IP_ADDRESS],
                     user_input[CONF_PORT],
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
                     use_https=user_input[CONF_SSL],
-                    verify_ssl=user_input[CONF_VERIFY_SSL],
                     timeout=user_input[CONF_TIMEOUT],
                     device_token=None,
                     debugmode=False,
                 )
-                await self.hass.async_add_executor_job(api.information.update)
-            except Exception as er:  # pylint: disable=broad-except
-                _LOGGER.error(er)
+                await api.information.update()
+            except SynologyDSMException as error:
+                _LOGGER.error(error)
                 errors["base"] = "cannot_connect"
             else:
                 return self.async_create_entry(

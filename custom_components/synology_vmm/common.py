@@ -14,9 +14,7 @@ async def async_get_setting_vm(hass, api, guest_id):
     ADV_SETTINGS.update({"guest_id": guest_id})
     params = {"version": 2, "compound": json.dumps([SETTINGS, USBS, ADV_SETTINGS])}
     try:
-        rslt = await hass.async_add_executor_job(
-            api.post, "SYNO.Entry.Request", "request", params
-        )
+        rslt = await api.post("SYNO.Entry.Request", "request", params)
         if rslt.get("data").get("has_fail", True) is False:
             for data in rslt.get("data", {}).get("result", []):
                 if usbs := infos.get("usbs"):
@@ -31,9 +29,7 @@ async def async_get_stats(hass, api, guest_id=None):
     """Get statistics virtual machine."""
     stats = []
     try:
-        rslt = await hass.async_add_executor_job(
-            api.post, "SYNO.Virtualization.Cluster", "get_guest"
-        )
+        rslt = await api.post("SYNO.Virtualization.Cluster", "get_guest")
         stats = rslt.get("data", {}).get("guests", [])
         if guest_id:
             for stat in stats:

@@ -9,8 +9,7 @@
                     "ip_address": "IP/Hostname",
                     "port": "Port",
                     "timeout": "Timeout",
-                    "ssl": "Use https",
-                    "verify_ssl": "Verify SSL certificat"                    
+                    "ssl": "Use https"                  
                 }
             }
         },

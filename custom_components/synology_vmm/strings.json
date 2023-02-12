@@ -9,8 +9,7 @@
             "ip_address": "[%key:common::config_flow::data::ip_address%]",
             "port": "Port",
             "timeout": "timeout",
-            "ssl": "Use https",
-            "verify_ssl": "Verify SSL certificat"
+            "ssl": "Use https"
           }
         }
       },

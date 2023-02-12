@@ -1,0 +1,24 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Enrollement du synology",
+                "data": {
+                    "username": "Uutilisateur",
+                    "password": "Mot de passe",
+                    "ip_address": "Adresse ip ou nom fqdn",
+                    "port": "Port",
+                    "timeout": "Timeout",
+                    "ssl": "Utilisation du Https"                  
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Impossible de se connecter",
+            "unknown": "Une erreur imprévue c'est produite"
+        },
+        "abort": {
+            "already_configured": "Equipement déjà configuré"
+        }
+    }
+}

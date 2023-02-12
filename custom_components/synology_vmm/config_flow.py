@@ -1,7 +1,8 @@
 """Config flow to configure Synology virtual machine."""
 import logging
 
-from synology_dsm import SynologyDSM, SynologyDSMException
+from synology_dsm import SynologyDSM
+from synology_dsm.exceptions import SynologyDSMException
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow
@@ -11,7 +12,7 @@ from homeassistant.const import (
     CONF_PORT,
     CONF_SSL,
     CONF_TIMEOUT,
-    CONF_USERNAME
+    CONF_USERNAME,
 )
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_create_clientsession

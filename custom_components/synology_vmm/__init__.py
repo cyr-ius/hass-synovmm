@@ -5,7 +5,8 @@ from datetime import timedelta
 import json
 import logging
 
-from synology_dsm import SynologyDSM, SynologyDSMException
+from synology_dsm import SynologyDSM
+from synology_dsm.exceptions import SynologyDSMException
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry

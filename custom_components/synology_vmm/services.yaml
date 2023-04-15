@@ -34,6 +34,7 @@ set_vm:
         text:
     autorun:
       name: Autorun
+      description: Set auto status
       default: 2
       selector:
         select:
@@ -47,6 +48,7 @@ set_vm:
               value: 2
     boot_from:
       name: Boot from
+      description: Set device for a system startup
       default: disk
       selector:
         select:
@@ -63,10 +65,12 @@ set_vm:
         text:
     use_ovmf:
       name: Use ovmf
+      description: Ovmf file usage
       selector:
         boolean:
     usb_version:
       name: USB version
+      description: USB version
       selector:
         select:
           options:
@@ -74,57 +78,70 @@ set_vm:
             - 3
     old_use_ovmf:
       name: Old user ovmf
+      description: Ovmf user usage
       selector:
         boolean:
     vnics_add:
       name: Add vnics
+      description: add virtual network cards
+      selector:
       selector:
         text:
     vnics_del:
       name: Remove vnics
+      description: remove virtual network cards
       selector:
         text:
     vnics_edit:
       name: Edit vnics
+      description: Edit virtual network cards
       selector:
         text:
     increaseAllocatedSize:
       name: Increase Allocated size
+      description: Increase memory size
       selector:
         number:
           min: 0
           max: 16096
     order_changed:
       name: Order changed
+      description: Ordering
       default: False
       selector:
         boolean:
     vdisks_add:
       name: Add vdisks
+      description: Add virtual disk
       selector:
         text:
     vdisks_del:
       name: Remove vdisks
+      description: Remove virtual disk
       selector:
         text:
     vdisks_edit:
       name: Edit vdisks
+      description: Edit virtual disk
       selector:
         text:
     cpu_weight:
       name: CPU weight
+      description: CPU priority
       selector:
         number:
           min: 0
           max: 256
     cpu_pin_num:
       name: CPU number
+      description: Cpu number
       selector:
         number:
           min: 0
           max: 100
     vdisk_num:
       name: VDisk number
+      description: Virtual disks number
       selector:
         number:
           min: 0

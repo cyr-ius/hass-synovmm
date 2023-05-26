@@ -2,7 +2,9 @@
 import json
 import logging
 
-from .const import USBS, SETTINGS, ADV_SETTINGS
+from synology_dsm.exceptions import SynologyDSMException
+
+from .const import ADV_SETTINGS, SETTINGS, USBS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +22,7 @@ async def async_get_setting_vm(api, guest_id):
                 if usbs := infos.get("usbs"):
                     infos["usb_list"] = usbs
                 infos.update(data["data"])
-    except Exception as error:
+    except SynologyDSMException as error:
         _LOGGER.error(error)
     return infos
 
@@ -35,6 +37,6 @@ async def async_get_stats(api, guest_id=None):
             for stat in stats:
                 if stat["id"] == guest_id:
                     return stat
-    except Exception as error:
+    except SynologyDSMException as error:
         _LOGGER.error(error)
     return stats

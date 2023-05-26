@@ -7,6 +7,6 @@
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/Cyr-ius/hass-synovmm/issues",
     "loggers": ["py-synologydsm-api"],
-    "requirements": ["py-synologydsm-api==2.1.4"],
+    "requirements": ["py-synologydsm-api==2.3.0"],
     "version": "2.0"
 }

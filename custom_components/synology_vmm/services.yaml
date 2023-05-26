@@ -30,6 +30,7 @@ set_vm:
         text:
     guest_privilege:
       name: Guest privilege
+      description: Guest privilege
       selector:
         text:
     autorun:

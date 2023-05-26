@@ -7,7 +7,7 @@ from .const import USBS, SETTINGS, ADV_SETTINGS
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_get_setting_vm(hass, api, guest_id):
+async def async_get_setting_vm(api, guest_id):
     """Return list vm."""
     infos = {}
     SETTINGS.update({"guest_id": guest_id})
@@ -25,7 +25,7 @@ async def async_get_setting_vm(hass, api, guest_id):
     return infos
 
 
-async def async_get_stats(hass, api, guest_id=None):
+async def async_get_stats(api, guest_id=None):
     """Get statistics virtual machine."""
     stats = []
     try:

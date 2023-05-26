@@ -108,18 +108,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         SET.update({GUEST_ID: entity.unique_id})
         SET.update(json_params)
         params = {"version": 2, "compound": json.dumps([SET])}
-        try:
-            _LOGGER.debug(f"Service Request: {params}")
-            response = await coordinator.api.post(
-                "SYNO.Entry.Request", "request", params
-            )
-            _LOGGER.debug(f"Service Response: {response}")
-            if response.get("data", {}).get("has_fail", True):
-                raise Exception(response["data"].get("result"))
-        except SynologyDSMException as error:
-            raise Exception(error)
-        else:
-            await coordinator.async_request_refresh()
+
+        _LOGGER.debug("Service Request: %s", params)
+        
+        response = await coordinator.api.post(
+            "SYNO.Entry.Request", "request", params
+        )
+        _LOGGER.debug("Service Response: %s", response)
+        
+        if response.get("data", {}).get("has_fail", True):
+            raise SynologyDSMException(response["data"].get("result"))
+        
+        await coordinator.async_request_refresh()
 
     hass.services.async_register(
         DOMAIN, SERVICE_SET_VM, async_set_vm, schema=VMCONFIG_SCHEMA
@@ -167,8 +167,8 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
             vms = await self.api.post("SYNO.Virtualization.API.Guest", "list")
             for vm in vms.get("data", {}).get("guests", []):
                 gid = vm[GUEST_ID]
-                settings = await async_get_setting_vm(self.hass, self.api, gid)
-                stats = await async_get_stats(self.hass, self.api, gid)
+                settings = await async_get_setting_vm(self.api, gid)
+                stats = await async_get_stats(self.api, gid)
                 settings["stats"] = stats
                 configurations.update({gid: settings})
 

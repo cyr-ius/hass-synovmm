@@ -67,7 +67,7 @@ class VMSensor(CoordinatorEntity, SwitchEntity):
             manufacturer=DOMAIN,
         )
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self) -> None:
         """Turn the entity on."""
         await self.coordinator.api.post(
             "SYNO.Virtualization.API.Guest.Action",
@@ -76,7 +76,7 @@ class VMSensor(CoordinatorEntity, SwitchEntity):
         )
         await self.coordinator.async_request_refresh()
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self):
         """Turn the entity off."""
         await self.coordinator.api.post(
             "SYNO.Virtualization.API.Guest.Action",

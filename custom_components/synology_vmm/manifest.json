@@ -8,5 +8,5 @@
     "issue_tracker": "https://github.com/Cyr-ius/hass-synovmm/issues",
     "loggers": ["py-synologydsm-api"],
     "requirements": ["py-synologydsm-api==2.3.0"],
-    "version": "2.2"
+    "version": "2.2.1"
 }

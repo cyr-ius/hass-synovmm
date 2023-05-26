@@ -97,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def async_set_vm(call) -> None:
-        entity_registry = await er.async_get_registry(hass)
+        entity_registry = er.async_get(hass)
         entity = entity_registry.async_get(call.data[CONF_ENTITY_ID])
         json_params = call.data.copy()
         json_params.pop(CONF_ENTITY_ID)

@@ -163,6 +163,7 @@ class SynologyVMMDataUpdateCoordinator(DataUpdateCoordinator):
         """Update data."""
         configurations = {}
         try:
+            await self.api.login()
             await self.api.information.update()
             vms = await self.api.post("SYNO.Virtualization.API.Guest", "list")
             for vm in vms.get("data", {}).get("guests", []):
